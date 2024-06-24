@@ -3,9 +3,6 @@ from __future__ import division
 import math
 import re
 
-from ._version import get_versions
-__version__ = get_versions()['version']
-del get_versions
 
 # Print a floating-point number in engineering notation.
 # Ported from [C version][1] written by
@@ -38,10 +35,7 @@ SI_PREFIX_UNITS = u"yzafpnµm kMGTPEZY"
 #:         `Issue #4`_.
 #:
 #: .. _`Issue #4`: https://github.com/cfobel/si-prefix/issues/4
-CRE_SI_NUMBER = re.compile(r'\s*(?P<sign>[\+\-])?'
-                           r'(?P<integer>\d+)'
-                           r'(?P<fraction>.\d+)?\s*'
-                           u'(?P<si_unit>[%s])?\s*' % SI_PREFIX_UNITS)
+CRE_SI_NUMBER = re.compile(r'\s*(?P<sign>[\+\-])?(?P<integer>\d+)(?P<fraction>.\d+)?\s*(?P<si_unit>[%s])?\s*' % SI_PREFIX_UNITS)
 
 
 def split(value, precision=1):
@@ -78,11 +72,12 @@ def split(value, precision=1):
     negative = False
     digits = precision + 1
 
-    if value < 0.:
+    if value < 0:
         value = -value
         negative = True
-    elif value == 0.:
-        return 0., 0
+
+    elif value == 0:
+        return 0, 0
 
     expof10 = int(math.log10(value))
     if expof10 > 0:
@@ -93,11 +88,11 @@ def split(value, precision=1):
     value *= 10 ** (-expof10)
 
     if value >= 1000.:
-        value /= 1000.0
+        value /= 1000
         expof10 += 3
-    elif value >= 100.0:
+    elif value >= 100:
         digits -= 2
-    elif value >= 10.0:
+    elif value >= 10:
         digits -= 1
 
     if negative:
@@ -125,8 +120,7 @@ def prefix(expof10):
     return SI_PREFIX_UNITS[si_level + prefix_levels]
 
 
-def si_format(value, precision=1, format_str=u'{value} {prefix}',
-              exp_format_str=u'{value}e{expof10}'):
+def si_format(value, precision=1, format_str=u'{value} {prefix}', exp_format_str=u'{value}e{expof10}'):
     '''
     Format value to string with SI prefix, using the specified precision.
 
@@ -217,8 +211,7 @@ def si_format(value, precision=1, format_str=u'{value} {prefix}',
         sign = ''
         if expof10 > 0:
             sign = "+"
-        return exp_format_str.format(value=value_str,
-                                     expof10=''.join([sign, str(expof10)]))
+        return exp_format_str.format(value=value_str, expof10=''.join([sign, str(expof10)]))
 
 
 def si_parse(value):
@@ -241,21 +234,20 @@ def si_parse(value):
 
     .. _`Issue #4`: https://github.com/cfobel/si-prefix/issues/4
     '''
-    CRE_10E_NUMBER = re.compile(r'^\s*(?P<integer>[\+\-]?\d+)?'
-                                r'(?P<fraction>.\d+)?\s*([eE]\s*'
-                                r'(?P<expof10>[\+\-]?\d+))?$')
-    CRE_SI_NUMBER = re.compile(r'^\s*(?P<number>(?P<integer>[\+\-]?\d+)?'
-                               r'(?P<fraction>.\d+)?)\s*'
-                               u'(?P<si_unit>[%s])?\s*$' % SI_PREFIX_UNITS)
+    CRE_10E_NUMBER = re.compile(r'^\s*(?P<integer>[\+\-]?\d+)?(?P<fraction>.\d+)?\s*([eE]\s*(?P<expof10>[\+\-]?\d+))?$')
+    CRE_SI_NUMBER = re.compile(r'^\s*(?P<number>(?P<integer>[\+\-]?\d+)?(?P<fraction>.\d+)?)\s*(?P<si_unit>[%s])?\s*$' % SI_PREFIX_UNITS)
+
     match = CRE_10E_NUMBER.match(value)
+
     if match:
         # Can be parse using `float`.
         assert(match.group('integer') is not None or
                match.group('fraction') is not None)
         return float(value)
+    
     match = CRE_SI_NUMBER.match(value)
-    assert(match.group('integer') is not None or
-           match.group('fraction') is not None)
+
+    assert(match.group('integer') is not None or match.group('fraction') is not None)
     d = match.groupdict()
     si_unit = d['si_unit'] if d['si_unit'] else ' '
     prefix_levels = (len(SI_PREFIX_UNITS) - 1) // 2
